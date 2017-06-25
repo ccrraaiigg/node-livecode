@@ -1,0 +1,27 @@
+{
+  "name": "node-livecode",
+  "version": "1.0.0",
+  "description": "livecoding support for node modules",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ccrraaiigg/node-livecode.git"
+  },
+  "keywords": [
+    "livecoding",
+    "node",
+    "websocket"
+  ],
+  "author": "Craig Latta",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ccrraaiigg/node-livecode/issues"
+  },
+  "homepage": "https://github.com/ccrraaiigg/node-livecode",
+  "dependencies": {
+    "ws": "^3.0.0"
+  }
+}
