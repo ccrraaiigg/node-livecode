@@ -2,6 +2,8 @@ var childProcess = require('child_process')
 const WebSocket = require('ws')
 
 const wss = new WebSocket.Server({port: 8087})
+global.wss = wss
+
 wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
     console.log('received a command')
@@ -9,6 +11,9 @@ wss.on('connection', function connection(ws) {
     switch (command.verb) {
     case 'require':
       myRequire(ws, command.parameters);
+      break
+    case 'eval':
+      eval(command.parameters.body)
       break
     default: }})})
 
