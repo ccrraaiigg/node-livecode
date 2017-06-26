@@ -5,8 +5,8 @@ var fs = require('fs')
 var ws_cfg = {
     ssl: true,
     port: 8087,
-    ssl_key: '',
-    ssl_cert: ''
+    ssl_key: '/etc/letsencrypt/live/frankfurt.demo.blackpagedigital.com/privkey.pem',
+    ssl_cert: '/etc/letsencrypt/live/frankfurt.demo.blackpagedigital.com/fullchain.pem'
 };
 
 var processRequest = function(req, res) {
@@ -22,26 +22,44 @@ app = httpServ.createServer({
 }, processRequest).listen(ws_cfg.port);
 
 var wss = new WebSocket.Server( {server: app});
-
-// const wss = new WebSocket.Server({port: 8087})
 global.wss = wss
+global.instructions = new Object
+global.myUndefined = undefined
 
 wss.on('connection', function connection(ws) {
-  ws.on('message', function incoming(message) {
-    console.log('received a command')
-    var command = JSON.parse(message)
-    switch (command.verb) {
-    case 'require':
-      myRequire(ws, command.parameters);
-      break
-    case 'eval':
-      eval(command.parameters.body)
-      break
-    default: }})})
+    ws.on('message', function incoming(message) {
+	myLog(ws, 'received a command')
+	var command = JSON.parse(message),
+	    verb = command.verb,
+	    parameters = command.parameters
+	
+	if (command.credential == '0b97baf7-0fca-4cb3-add5-36a714a6ab1c') {
+	    switch (verb) {
+	    case 'require':
+		myLog(ws, 'received require for ' + parameters.package)
+		var loadPackage = childProcess.spawn('npm', ['install', parameters.package])
+		loadPackage.on(
+		    'close',
+		    function () {
+			eval(parameters.then)})
+		break
+	    case 'add instruction':
+		myLog(ws, 'adding instruction \'' + parameters.verbToAdd + '\'')
+		instructions[parameters.verbToAdd] = new Function(parameters.body)
+		break
+	    case 'eval':
+		myLog(ws, 'evaluting code')
+		eval(parameters.body)
+		break
+	    default: }}
+	else {
+	    if (typeof instructions[verb] == "function") {
+		myLog(ws, 'evaluating added instruction \'' + verb + '\'')
+		ws.send(instructions[verb].call())}
+	    else myLog(ws, 'rejected command')}})})
 
-function myRequire(ws, parameters) {
-  ws.send('received require command')
-  var loadPackage = childProcess.spawn('npm', ['install', parameters.package])
-  loadPackage.on('close', function () {
-    eval(parameters.then)})}
+function myLog(ws, string) {
+    var toSend = 'server: ' + string
+    console.log(toSend)
+    ws.send(toSend)}
 
