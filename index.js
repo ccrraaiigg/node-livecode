@@ -55,7 +55,7 @@ wss.on('connection', function connection(ws) {
 	else {
 	    if (typeof instructions[verb] == "function") {
 		myLog(ws, 'evaluating added instruction \'' + verb + '\'')
-		ws.send(instructions[verb].call())}
+		ws.send(instructions[verb].apply(null, parameters.parameters))}
 	    else myLog(ws, 'rejected command')}})})
 
 function myLog(ws, string) {
