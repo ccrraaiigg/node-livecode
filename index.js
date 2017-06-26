@@ -43,7 +43,7 @@ wss.on('connection', function connection(ws) {
 		break
 	    case 'add instruction':
 		myLog(ws, 'adding instruction \'' + parameters.verbToAdd + '\'')
-		var instruction = eval('return ' + parameters.body)
+		var instruction = eval('return ' + parameters.body + ';')
 		if (typeof instruction = 'function')
 		    instructions[parameters.verbToAdd] = instruction
 		break
