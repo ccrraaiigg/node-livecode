@@ -5,23 +5,21 @@ var fs = require('fs')
 var ws_cfg = {
     ssl: true,
     port: 8087,
-    ssl_key: '/etc/letsencrypt/live/frankfurt.demo.blackpagedigital.com/privkey.pem',
-    ssl_cert: '/etc/letsencrypt/live/frankfurt.demo.blackpagedigital.com/fullchain.pem'
-};
+    ssl_key: '',
+    ssl_cert: ''}
 
 var processRequest = function(req, res) {
-    console.log("Request received.")
-};
+    console.log("Request received.")}
 
-var httpServ = require('https');
-var app = null;
+var httpServ = require('https')
+var app = null
 
 app = httpServ.createServer({
     key: fs.readFileSync(ws_cfg.ssl_key),
     cert: fs.readFileSync(ws_cfg.ssl_cert)
-}, processRequest).listen(ws_cfg.port);
+}, processRequest).listen(ws_cfg.port)
 
-var wss = new WebSocket.Server( {server: app});
+var wss = new WebSocket.Server( {server: app})
 global.wss = wss
 global.instructions = new Object
 global.myUndefined = undefined
@@ -33,7 +31,7 @@ wss.on('connection', function connection(ws) {
 	    verb = command.verb,
 	    parameters = command.parameters
 	
-	if (command.credential == '0b97baf7-0fca-4cb3-add5-36a714a6ab1c') {
+	if (command.credential == '') {
 	    switch (verb) {
 	    case 'require':
 		myLog(ws, 'received require for ' + parameters.package)
@@ -45,7 +43,9 @@ wss.on('connection', function connection(ws) {
 		break
 	    case 'add instruction':
 		myLog(ws, 'adding instruction \'' + parameters.verbToAdd + '\'')
-		instructions[parameters.verbToAdd] = new Function(parameters.body)
+		var instruction = eval(parameters.body)
+		if (typeof instruction = 'function')
+		    instructions[parameters.verbToAdd] = instruction
 		break
 	    case 'eval':
 		myLog(ws, 'evaluting code')
