@@ -5,8 +5,8 @@ var fs = require('fs')
 var ws_cfg = {
     ssl: true,
     port: 8087,
-    ssl_key: '',
-    ssl_cert: ''}
+    ssl_key: '/etc/letsencrypt/live/yoursite/privkey.pem',
+    ssl_cert: '/etc/letsencrypt/live/yoursite/fullchain.pem'}
 
 var processRequest = function(req, res) {
     console.log("Request received.")}
@@ -26,12 +26,13 @@ global.myUndefined = undefined
 
 wss.on('connection', function connection(ws) {
     ws.on('message', function incoming(message) {
-	myLog(ws, 'received a command')
 	var command = JSON.parse(message),
 	    verb = command.verb,
 	    parameters = command.parameters
-	
-	if (command.credential == '') {
+
+	myLog(ws, 'received command \'' + verb + '\'')
+
+	if (command.credential == 'shared secret') {
 	    switch (verb) {
 	    case 'require':
 		myLog(ws, 'received require for ' + parameters.package)
@@ -43,8 +44,8 @@ wss.on('connection', function connection(ws) {
 		break
 	    case 'add instruction':
 		myLog(ws, 'adding instruction \'' + parameters.verbToAdd + '\'')
-		var instruction = eval('return ' + parameters.body + ';')
-		if (typeof instruction = 'function')
+		var instruction = eval('(' + parameters.body + ')')
+		if (typeof instruction == 'function')
 		    instructions[parameters.verbToAdd] = instruction
 		break
 	    case 'eval':
@@ -55,8 +56,9 @@ wss.on('connection', function connection(ws) {
 	else {
 	    if (typeof instructions[verb] == "function") {
 		myLog(ws, 'evaluating added instruction \'' + verb + '\'')
-		ws.send(instructions[verb].apply(ws, parameters.parameters))}
-	    else myLog(ws, 'rejected command')}})})
+		myLog(ws, instructions[verb].apply(ws, parameters.parameters))}
+	    else
+		myLog(ws, 'rejected command \'' + verb + '\'')}})})
 
 function myLog(ws, string) {
     var toSend = 'server: ' + string
